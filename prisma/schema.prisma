@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String      @id @default(uuid())
+  email           String      @unique
+  password        String?     // JWT
+  role            Role        // 'user' ou 'admin'
+  full_name       String?
+  phone_number   String?     @unique
+  profile_picture String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  plateformes     Plateforme[]  // Un utilisateur peut avoir plusieurs plateformes OAuth2
+  businesses      Business[]    // Un utilisateur peut ajouter plusieurs businesses
+}
+
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Plateforme {
+  id          String   @id @default(uuid())
+  provider    String   // "Google" ou "Facebook"
+  oauthId     String   @unique  // ID unique donné par Google/Facebook
+  email       String   // Email utilisé pour OAuth2 (ex: manager@restaurant.com)
+  accessToken String   // Token OAuth2 pour récupérer les avis
+  refreshToken String? // Token pour rafraîchir l'accès OAuth2
+  accountId   String?  // Google Account ID (ex: "accounts/123456789"), NULL pour Facebook
+  userId      String   // Lien avec `User`
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id]) 
+  businesses  Business[]  // Une plateforme peut avoir plusieurs businesses
+}
+
+model Business {
+  id          String   @id @default(uuid())
+  name        String   // Nom de l'entreprise
+  email       String  // Email du business
+  phone       String?  // Numéro de téléphone
+  address     String?  // Adresse physique
+  description String?  // Description du business
+  category    String?  // Catégorie (ex: Restaurant, Tech, etc.)
+
+  locationId  String?  // Google Location ID (ex: "locations/56789"), NULL si Facebook
+  pageId      String?  // Facebook Page ID (ex: "1234567890"), NULL si Google
+  createdAt   DateTime @default(now())
+
+  // Relations
+
+  userId      String   // Lien avec l'utilisateur JWT qui a ajouté ce business
+  plateformeId  String?   // Lien avec la plateforme utilisée pour ajouter ce business
+
+  user        User     @relation(fields: [userId], references: [id])
+  plateforme  Plateforme? @relation(fields: [plateformeId], references: [id])
+
+ 
+}
