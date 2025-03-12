@@ -1,13 +1,11 @@
 import { IsString, IsOptional, IsEmail } from 'class-validator';
 
 export class UpdateBusinessDto {
-  @IsOptional()
   @IsString()
-  name?: string;  // Nom de l'entreprise (optionnel)
+  name: string;  // Nom de l'entreprise
 
-  @IsOptional()
   @IsEmail()
-  email?: string;  // Email du business (optionnel)
+  email: string;  // Email du business
 
   @IsOptional()
   @IsString()
@@ -24,20 +22,4 @@ export class UpdateBusinessDto {
   @IsOptional()
   @IsString()
   category?: string;  // Catégorie (optionnel)
-
-  @IsOptional()
-  @IsString()
-  locationId?: string;  // Google Location ID (optionnel)
-
-  @IsOptional()
-  @IsString()
-  pageId?: string;  // Facebook Page ID (optionnel)
-
-  @IsOptional()
-  @IsString()
-  userId?: string;  // Lien avec l'utilisateur JWT qui a ajouté ce business (optionnel)
-
-  @IsOptional()
-  @IsString()
-  platformId?: string;  // Lien avec la plateforme utilisée pour ajouter ce business (optionnel)
 }

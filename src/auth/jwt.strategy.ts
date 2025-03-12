@@ -9,9 +9,8 @@ import { UsersService } from 'src/users/users.service';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     
-    
-
-      private readonly usersService: UsersService,  // Injecte le service utilisateur pour vérifier l'existence
+  
+      private readonly usersService: UsersService, 
         configService: ConfigService ) {
       super({
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -41,29 +40,3 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   
   
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    /*
-    
-    private configService: ConfigService) {
-    super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: configService.get('JWT_SECRET'),
-    });
-  }
-
-  async validate(payload: any) {
-    // Le payload contient les données du JWT
-    console.log('JWT Payload:', payload); // Vérifie le payload
-    return { userId: payload.sub, email: payload.email };
-  }
-}
-*/
