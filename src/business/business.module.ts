@@ -1,13 +1,13 @@
-import { Module } from '@nestjs/common';
-import { BusinessController } from './business.controller';
+import { Module, forwardRef } from '@nestjs/common';
 import { BusinessService } from './business.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { BusinessController } from './business.controller';
+import { PrismaService } from '../prisma/prisma.service';
+import { PlateformeModule } from '../plateforme/plateforme.module';
 
 @Module({
-    imports: [PrismaModule], 
+  imports: [forwardRef(() => PlateformeModule)], // 🔹 Évite la dépendance circulaire
+  providers: [BusinessService, PrismaService],
   controllers: [BusinessController],
-  providers: [BusinessService],
-
+  exports: [BusinessService], // 🔹 Important pour être utilisé ailleurs
 })
 export class BusinessModule {}

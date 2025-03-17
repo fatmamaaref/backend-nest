@@ -9,6 +9,8 @@ import { BusinessService } from './business/business.service';
 import { BusinessController } from './business/business.controller';
 import { BusinessModule } from './business/business.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { PlateformeModule } from './plateforme/plateforme.module';
+import { GoogleBusinessService } from './google-business/google-business.service';
 
 @Module({
   imports: [
@@ -17,10 +19,10 @@ import { PrismaModule } from './prisma/prisma.module';
      UsersModule,  
      ConfigModule.forRoot({
       isGlobal: true,  // Cela rend les variables d'environnement accessibles partout
-    }), BusinessModule, PrismaModule,
+    }), BusinessModule, PrismaModule, PlateformeModule,
   ],
 
   controllers: [AppController, BusinessController],
-  providers: [AppService, BusinessService],
+  providers: [AppService, BusinessService, GoogleBusinessService],
 })
 export class AppModule {}

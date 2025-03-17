@@ -23,5 +23,12 @@ export class CreateBusinessDto {
   @IsString()
   category?: string;  // Catégorie (optionnel)
 
+  @IsOptional()
+  @IsString()
+  locationId?: string;
+
+  @IsOptional()
+  @IsString()
+  pageId?: string;
 }
 
