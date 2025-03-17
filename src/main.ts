@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common/pipes/validation.pipe';
 import * as bodyParser from 'body-parser';
+import { ADMINAUTO } from './core/data';
 
 
 async function bootstrap() {
@@ -19,7 +20,7 @@ async function bootstrap() {
     allowedHeaders: 'Content-Type, Accept, Authorization', // Autoriser le header Authorization
     credentials: true
   });
-  
+  await ADMINAUTO();
   await app.listen(5000);  // Le backend écoute sur le port 5000
 }
 

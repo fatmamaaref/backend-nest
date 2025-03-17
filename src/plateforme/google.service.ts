@@ -258,7 +258,12 @@ export class GoogleService {
 import { Injectable, BadRequestException } from "@nestjs/common";
 import axios from "axios";
 import { PrismaService } from "src/prisma/prisma.service";
-
+import {OAuth2Client} from "google-auth-library"
+const oauth2Client = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.GOOGLE_REDIRECT_URL
+);
 @Injectable()
 export class GoogleService {
   private readonly GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -271,9 +276,10 @@ export class GoogleService {
     const params = new URLSearchParams({
       client_id: process.env.GOOGLE_CLIENT_ID,
       redirect_uri: process.env.GOOGLE_REDIRECT_URI,
-      response_type: "code",
-      scope: "openid email profile https://www.googleapis.com/auth/business.manage",
       state: businessId,
+      response_type: "code",
+      scope: "https://www.googleapis.com/auth/business.manage",
+
       access_type: "offline",
       prompt: "consent",
     });
