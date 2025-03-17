@@ -259,11 +259,7 @@ import { Injectable, BadRequestException } from "@nestjs/common";
 import axios from "axios";
 import { PrismaService } from "src/prisma/prisma.service";
 import {OAuth2Client} from "google-auth-library"
-const oauth2Client = new OAuth2Client(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URL
-);
+
 @Injectable()
 export class GoogleService {
   private readonly GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";

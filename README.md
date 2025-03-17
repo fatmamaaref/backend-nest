@@ -102,6 +102,9 @@ Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
 ## installlerrrrrrrrrrrrrrrrrrrrr !!! 
 npm install --save-dev @types/node
 
+npm install google-auth-library
+
+
 
 
 
