@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String      @id @default(uuid())
+  email           String      @unique
+  password        String?     // JWT
+  role            Role        // 'user' ou 'admin'
+  full_name       String?
+  phone_number   String?     @unique
+  profile_picture String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  plateformes     Plateforme[]  // Un utilisateur peut avoir plusieurs plateformes OAuth2
+  businesses      Business[]    // Un utilisateur peut ajouter plusieurs businesses
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+
+model Business {
+  id          String   @id @default(uuid())
+  name        String   
+  email       String  
+  phone       String?  
+  address     String?  
+  description String?  
+  category    String?  
+  locationId  String?  
+  pageId      String?  
+  createdAt   DateTime @default(now())
+
+  userId      String   // L'utilisateur qui a ajouté ce business
+
+  // Relations
+  user                 User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviews              Review[]   
+  businessPlateformes  BusinessPlateforme[]
+}
+
+model Plateforme {
+  id          String   @id @default(uuid())
+  provider    String  
+  oauthId     String   @unique  
+  email       String   
+  accessToken String   
+  refreshToken String? 
+  pageAccessToken String? 
+  accountId   String?  
+  userId      String   
+
+  // Relations
+  user                 User                   @relation(fields: [userId], references: [id], onDelete: Cascade) 
+  businessPlateformes  BusinessPlateforme[]
+}
+
+ // Table intermédiaire pour M:N entre Business et Plateforme
+model BusinessPlateforme {
+  id           String   @id @default(uuid())
+  businessId   String
+  plateformeId String
+
+   // Relations
+  business     Business   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  plateforme   Plateforme @relation(fields: [plateformeId], references: [id], onDelete: Cascade)
+    
+  @@unique([businessId, plateformeId]) // Empêche les doublons
+}
+
+
+model Review {
+  id          String   @id @default(uuid())
+  businessId  String   
+  platformId  String   // ID du commentaire sur la plateforme (ex: ID Facebook)
+  author      String   // Nom de l'auteur du commentaire
+  message     String   // Contenu du commentaire
+  sentiment   String?  // Résultat de l'analyse des sentiments (positif, négatif, neutre)
+  response    String?  // Réponse générée automatiquement
+  createdAt   DateTime @default(now())
+ updatedAt   DateTime @updatedAt  
+
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+ // @@unique([businessId, platformId, message]) 
+}
