@@ -12,20 +12,29 @@ import { PrismaModule } from './prisma/prisma.module';
 import { PlateformeModule } from './plateforme/plateforme.module';
 import { GoogleBusinessService } from './google-business/google-business.service';
 import { ReviewModule } from './review/review.module';
-
+import { CacheModule } from '@nestjs/cache-manager';
+import { HttpModule } from '@nestjs/axios';
+import { SentimentController } from './sentiment/sentiment.controller';
+import { SentimentService } from './sentiment/sentiment.service';
 
 
 @Module({
   imports: [
- 
+    CacheModule.register({
+      store: 'memory',
+      ttl: 86400,
+      max: 1000,
+    }),
+    HttpModule,
      AuthModule,
      UsersModule,  
      ConfigModule.forRoot({
+      envFilePath: '.env',
       isGlobal: true,  // Cela rend les variables d'environnement accessibles partout
     }), BusinessModule, PrismaModule, PlateformeModule, ReviewModule,
   ],
-
-  controllers: [AppController, BusinessController],
-  providers: [AppService, BusinessService, GoogleBusinessService],
+  exports: [CacheModule],
+  controllers: [AppController, BusinessController, SentimentController],
+  providers: [AppService, BusinessService, GoogleBusinessService, SentimentService],
 })
 export class AppModule {}

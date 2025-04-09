@@ -1,15 +1,23 @@
+
+
+
 import { Body, Controller, Get, Param, Post, HttpCode, HttpStatus,  HttpException, BadRequestException } from '@nestjs/common';
 import { ReviewService } from './review.service';
 
+
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 
+@ApiTags('Reviews')
 @Controller('review')
 export class ReviewController {
   constructor(
     private readonly reviewService: ReviewService,
     private readonly prisma: PrismaService
   ) {}
+
 
   @Post('facebook/sync')
   @HttpCode(HttpStatus.OK)
@@ -75,7 +83,6 @@ export class ReviewController {
           createdAt: true
         }
       });
-  
       console.log(`Found ${reviews.length} reviews`);
       return { 
         success: true,
@@ -90,4 +97,48 @@ export class ReviewController {
       );
     }
   }
+
+  @Throttle(10, 60)
+  @Post(':reviewId/respond')
+  @ApiOperation({ summary: 'Générer et enregistrer une réponse automatique à un commentaire' })
+  @ApiResponse({ status: 200, description: 'Réponse générée avec succès' })
+  async respondToReview(
+    @Param('businessId') businessId: string,
+    @Param('reviewId') reviewId: string,
+  ) {
+    return this.reviewService.respondToReview(reviewId);
+  }
+/*
+  @Post('analyze-sentiments')
+  @ApiOperation({ summary: 'Relancer l\'analyse des sentiments pour toutes les reviews (admin)' })
+  @ApiResponse({ status: 200, description: 'Analyse terminée' })
+  async reanalyzeSentiments(
+    @Param('businessId') businessId: string,
+  ) {
+    return this.reviewService.reanalyzeSentiments(businessId);
+  }
+*/
+
+// Dans review.controller.ts
+@Post('analyze-sentiment')
+@HttpCode(HttpStatus.OK)
+async analyzeSentiment(@Body() body: { text: string }) {
+  try {
+    // Utilisez la méthode publique du service qui appelle la méthode privée
+    const result = await this.reviewService.analyzeSentiment(body.text);
+    return { 
+      success: true,
+      sentiment: result
+    };
+  } catch (error) {
+    throw new HttpException(
+      'Failed to analyze sentiment',
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
+}
+
+
+
+
 }

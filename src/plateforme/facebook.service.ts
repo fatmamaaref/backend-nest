@@ -1,9 +1,8 @@
 
 import { Injectable, BadRequestException } from "@nestjs/common";
 import axios from "axios";
-
-
 import { PrismaService } from "src/prisma/prisma.service";
+
 
 @Injectable()
 export class FacebookService {
@@ -11,9 +10,7 @@ export class FacebookService {
   private readonly FACEBOOK_TOKEN_URL = "https://graph.facebook.com/v19.0/oauth/access_token";
   private readonly FACEBOOK_USERINFO_URL = "https://graph.facebook.com/me";
 
-  constructor(private prisma: PrismaService,
-     
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async getFacebookAuthUrl(businessId: string): Promise<string> {
     const params = new URLSearchParams({
@@ -117,85 +114,6 @@ export class FacebookService {
     }
   }
 
-
- /*
-
-  async fetchFacebookBusinessData(accessToken: string, retryCount = 0): Promise<any> {
-    const accountsUrl = "https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token&access_token=" + accessToken;
-    try {
-      console.log("🚀 Fetch Facebook Business - Token reçu:", accessToken.substring(0, 10) + "...");
-      console.log("🔍 Requête vers :", accountsUrl);
-  
-      const response = await axios.get(accountsUrl);
-  
-      if (response.status === 429) {
-        const retryAfter = parseInt(response.headers["retry-after"] || "60", 10);
-        console.warn(`⏱️ Rate limit atteint, attente de ${retryAfter} secondes...`);
-       
-
-  
-        if (retryCount < 3) {
-          await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
-          return this.fetchFacebookBusinessData(accessToken, retryCount + 1);
-        } else {
-          throw new Error("🚨 Trop de tentatives, échec de la récupération !");
-        }
-      }
-  
-      if (!response.data?.data?.length) {
-        throw new Error("❌ Aucun compte Business Facebook trouvé.");
-      }
-  
-      // Extraction correcte du Business Manager ID
-      const accountId = response.data.data[0].id;
-      console.log("🔑 Account ID extrait:", accountId);
-  
-      // 🔍 Récupérer les pages associées à ce compte Business
-      const pagesUrl = `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token&access_token=${accessToken}`;
-      
-      
-
-      console.log("🔍 Requête vers :", pagesUrl);
-  
-      const pagesResponse = await axios.get(pagesUrl);
-           // Afficher l'access_token de chaque page dans la console
- 
-    
-  
-      if (!pagesResponse.data?.data?.length) {
-        throw new Error("❌ Aucune page trouvée pour ce compte.");
-      }
-  
-
-
-      // Extraction du premier `pageId`
-      const pageId = pagesResponse.data.data[0].id;
-      console.log("📍 Page ID extrait:", pageId);
-      const pageAccessToken = pagesResponse.data.data[0].access_token;
-
-
-
-
-      return {
-        accountId,
-        pageId,
-        pageAccessToken,
-        rawAccountData: response.data.data[0],
-        rawPageData: pagesResponse.data.data[0],
-      };
-    } catch (error) {
-      console.error("❌ Erreur lors de la récupération des données Facebook Business :", error.message);
-      return {
-        accountId: null,
-        pageId: null,
-        error: error.message,
-        errorStack: error.stack,
-      };
-    }
-  }
-
-}
-  */
 
 async fetchFacebookBusinessData(accessToken: string, retryCount = 0): Promise<any> {
   const apiUrl = "https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token&access_token=" + accessToken;
