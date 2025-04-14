@@ -14,8 +14,8 @@ import { GoogleBusinessService } from './google-business/google-business.service
 import { ReviewModule } from './review/review.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { HttpModule } from '@nestjs/axios';
-import { SentimentController } from './sentiment/sentiment.controller';
-import { SentimentService } from './sentiment/sentiment.service';
+
+
 
 
 @Module({
@@ -34,7 +34,7 @@ import { SentimentService } from './sentiment/sentiment.service';
     }), BusinessModule, PrismaModule, PlateformeModule, ReviewModule,
   ],
   exports: [CacheModule],
-  controllers: [AppController, BusinessController, SentimentController],
-  providers: [AppService, BusinessService, GoogleBusinessService, SentimentService],
+  controllers: [AppController, BusinessController],
+  providers: [AppService, BusinessService, GoogleBusinessService],
 })
 export class AppModule {}

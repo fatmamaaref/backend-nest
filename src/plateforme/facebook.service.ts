@@ -12,19 +12,23 @@ export class FacebookService {
 
   constructor(private prisma: PrismaService) {}
 
+
   async getFacebookAuthUrl(businessId: string): Promise<string> {
     const params = new URLSearchParams({
       client_id: process.env.FACEBOOK_CLIENT_ID,
       redirect_uri: process.env.FACEBOOK_REDIRECT_URI,
       state: businessId,
       response_type: "code",
-      scope:"pages_show_list,pages_read_engagement,pages_read_user_content",
+    //  scope:"pages_show_list,pages_read_engagement,pages_read_user_content",
+    scope: "pages_show_list,pages_read_engagement,pages_manage_engagement,pages_manage_posts,pages_read_user_content",
     
     });
    
     return `${this.FACEBOOK_AUTH_URL}?${params.toString()}`;
 
   }
+
+
   async getFacebookTokens(code: string) {
     try {
       console.log("Code reçu :", code);
@@ -168,3 +172,5 @@ async fetchFacebookBusinessData(accessToken: string, retryCount = 0): Promise<an
   }
 }
 }
+
+
