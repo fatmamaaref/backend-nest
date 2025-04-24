@@ -17,11 +17,22 @@ model User {
   profile_picture String?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
-
+  chats     Chat[]
   // Relations
   plateformes     Plateforme[]  // Un utilisateur peut avoir plusieurs plateformes OAuth2
   businesses      Business[]    // Un utilisateur peut ajouter plusieurs businesses
 }
+
+model Chat {
+  id        String    @id @default(uuid())
+  userId    String
+  messages  Json[]     // Stocke tous les messages de la conversation
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id])
+}
+
 
 enum Role {
   USER
@@ -40,9 +51,7 @@ model Business {
   locationId  String?  
   pageId      String?  
   createdAt   DateTime @default(now())
-
   userId      String   // L'utilisateur qui a ajouté ce business
-
   // Relations
   user                 User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   reviews              Review[]   
@@ -70,11 +79,9 @@ model BusinessPlateforme {
   id           String   @id @default(uuid())
   businessId   String
   plateformeId String
-
    // Relations
   business     Business   @relation(fields: [businessId], references: [id], onDelete: Cascade)
   plateforme   Plateforme @relation(fields: [plateformeId], references: [id], onDelete: Cascade)
-    
   @@unique([businessId, plateformeId]) // Empêche les doublons
 }
 
@@ -88,7 +95,7 @@ model Review {
   sentiment   String?  // Résultat de l'analyse des sentiments (positif, négatif, neutre)
   response    String?  // Réponse générée automatiquement
   createdAt   DateTime @default(now())
- updatedAt   DateTime @updatedAt  
+  updatedAt   DateTime @updatedAt  
 
   business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
  // @@unique([businessId, platformId, message]) 

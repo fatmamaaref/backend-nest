@@ -1,11 +1,10 @@
 
 
-
 import { Body, Controller, Get, Param, Post, HttpCode, HttpStatus,  HttpException, BadRequestException } from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
+
 
 
 @ApiTags('Reviews')
@@ -117,40 +116,6 @@ export class ReviewController {
     }
   }
 
-/*
-@Throttle(10, 60)
-@Post(':reviewId/respond-facebook')
-@ApiOperation({ summary: 'Générer et publier une réponse automatique à un commentaire Facebook' })
-@ApiResponse({ status: 200, description: 'Réponse générée et publiée avec succès' })
-async respondToFacebookReview(
-  @Param('reviewId') reviewId: string,
-) {
-  try {
-    const result = await this.reviewService.postFacebookResponse(reviewId);
-    
-    if (!result.success) {
-      throw new HttpException(
-        'Failed to respond to Facebook review',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
-
-    return {
-      success: true,
-      response: result.response,
-      facebookResponse: result.facebookResponse,
-    };
-  } catch (error) {
-    throw new HttpException(
-      error.message || 'Failed to respond to Facebook review',
-      HttpStatus.INTERNAL_SERVER_ERROR
-    );
-  }
-}
-}
-
-
-*/
 
 // Ajoutez ces endpoints à votre ReviewController
 
@@ -209,4 +174,52 @@ async postExistingResponse(@Param('reviewId') reviewId: string) {
     );
   }
 }
+@Post('generate-response/:reviewId')
+@HttpCode(HttpStatus.OK)
+async generateResponse(@Param('reviewId') reviewId: string) {
+  try {
+    console.log(`Requête de génération reçue pour ${reviewId}`); // Debug
+    const result = await this.reviewService.respondToReview(reviewId);
+    
+    if (!result.success) {
+      console.log('Échec de génération:', result); // Debug
+      throw new BadRequestException('Failed to generate response');
+    }
+
+    console.log('Réponse générée avec succès:', result.response); // Debug
+    return {
+      success: true,
+      response: result.response
+    };
+  } catch (error) {
+    console.error('Erreur dans le contrôleur:', error); // Debug
+    throw new HttpException(
+      error.message || 'Failed to generate response',
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
+
+}
+
+
+@Post('publish-response/:reviewId')
+@HttpCode(HttpStatus.OK)
+async publishResponse(@Param('reviewId') reviewId: string) {
+  try {
+    const result = await this.reviewService.publishResponse(reviewId);
+    
+    if (!result.success) {
+      throw new BadRequestException(result.message);
+    }
+
+    return result;
+  } catch (error) {
+    throw new HttpException(
+      error.message || 'Failed to publish response',
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
+}
+
+
 }
