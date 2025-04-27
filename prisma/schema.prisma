@@ -22,22 +22,35 @@ model User {
   plateformes     Plateforme[]  // Un utilisateur peut avoir plusieurs plateformes OAuth2
   businesses      Business[]    // Un utilisateur peut ajouter plusieurs businesses
 }
-
-model Chat {
-  id        String    @id @default(uuid())
-  userId    String
-  messages  Json[]     // Stocke tous les messages de la conversation
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  user      User      @relation(fields: [userId], references: [id])
-}
-
-
 enum Role {
   USER
   ADMIN
 }
+
+model Chat {
+  id        String    @id @default(uuid())
+  userId    String
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id])
+}
+// Ajoutez cette enum si elle n'existe pas déjà
+enum MessageRole {
+  USER
+  ASSISTANT
+}
+
+// Modifiez le modèle Message comme suit
+model Message {
+  id        String      @id @default(uuid())
+  chatId    String
+  role     MessageRole
+  content   String
+  timestamp DateTime    @default(now())
+  chat      Chat        @relation(fields: [chatId], references: [id], onDelete: Cascade)
+}
+
 
 
 model Business {

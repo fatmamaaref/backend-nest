@@ -14,6 +14,9 @@ import { GoogleBusinessService } from './google-business/google-business.service
 import { ReviewModule } from './review/review.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { HttpModule } from '@nestjs/axios';
+import { ChatService } from './chat/chat.service';
+import { ChatController } from './chat/chat.controller';
+import { ChatModule } from './chat/chat.module';
 
 
 
@@ -27,14 +30,15 @@ import { HttpModule } from '@nestjs/axios';
     }),
     HttpModule,
      AuthModule,
+     ChatModule,
      UsersModule,  
      ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,  // Cela rend les variables d'environnement accessibles partout
-    }), BusinessModule, PrismaModule, PlateformeModule, ReviewModule,
+    }), BusinessModule, PrismaModule, PlateformeModule, ReviewModule, ChatModule,
   ],
   exports: [CacheModule],
-  controllers: [AppController, BusinessController],
-  providers: [AppService, BusinessService, GoogleBusinessService],
+  controllers: [AppController, BusinessController, ChatController],
+  providers: [AppService, BusinessService, GoogleBusinessService, ChatService],
 })
 export class AppModule {}
