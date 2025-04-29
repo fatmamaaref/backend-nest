@@ -63,6 +63,11 @@ model Business {
   category    String?  
   locationId  String?  
   pageId      String?  
+  rating      Float?    @default(0.0)
+  reviewCount Int       @default(0)
+  lastAnalyzed DateTime?
+  @@index([rating])
+  @@index([reviewCount])
   createdAt   DateTime @default(now())
   userId      String   // L'utilisateur qui a ajouté ce business
   // Relations
@@ -107,6 +112,10 @@ model Review {
   message     String   // Contenu du commentaire
   sentiment   String?  // Résultat de l'analyse des sentiments (positif, négatif, neutre)
   response    String?  // Réponse générée automatiquement
+  rating      Int?       // Devrait être obligatoire?
+ @@index([businessId])
+  @@index([createdAt])
+  @@index([rating])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt  
 
