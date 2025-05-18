@@ -17,18 +17,6 @@ export class ReviewController {
  
   ) {}
 
-  @Get(':businessId')
-async getBusinessReviews(@Param('businessId') businessId: string) {
-  try {
-    return await this.reviewService.getBusinessReviews(businessId);
-  } catch (error) {
-    throw new HttpException(
-      error.message || 'Failed to fetch reviews',
-      HttpStatus.INTERNAL_SERVER_ERROR
-    );
-  }
-}
-
   @Post('facebook/sync')
 @HttpCode(HttpStatus.OK)
 async syncFacebookComments(@Body() body: { businessId: string }) {
@@ -296,9 +284,3 @@ console.error(`Status check failed: ${error.message}`);
   }
 }
 }
-
-
-
-
-
-
