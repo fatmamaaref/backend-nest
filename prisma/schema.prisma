@@ -86,6 +86,7 @@ model Plateforme {
   pageAccessToken String? 
   accountId   String?  
   userId      String   
+  autoReply   Boolean  @default(true)
 
   // Relations
   user                 User                   @relation(fields: [userId], references: [id], onDelete: Cascade) 
@@ -104,21 +105,25 @@ model BusinessPlateforme {
 }
 
 
+
+
 model Review {
   id          String   @id @default(uuid())
   businessId  String   
-  platformId  String   // ID du commentaire sur la plateforme (ex: ID Facebook)
+  platformId  String   
+  post_id     String?
   author      String   // Nom de l'auteur du commentaire
   message     String   // Contenu du commentaire
   sentiment   String?  // Résultat de l'analyse des sentiments (positif, négatif, neutre)
   response    String?  // Réponse générée automatiquement
   rating      Int?       // Devrait être obligatoire?
- @@index([businessId])
+  isAutoReply Boolean  @default(false)
+  @@index([businessId])
   @@index([createdAt])
   @@index([rating])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt  
-
+  respondedAt   DateTime? 
   business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
  // @@unique([businessId, platformId, message]) 
 }

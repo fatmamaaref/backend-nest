@@ -10,19 +10,21 @@ import { BusinessController } from './business/business.controller';
 import { BusinessModule } from './business/business.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { PlateformeModule } from './plateforme/plateforme.module';
-import { GoogleBusinessService } from './google-business/google-business.service';
+
 import { ReviewModule } from './review/review.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { HttpModule } from '@nestjs/axios';
 import { ChatService } from './chat/chat.service';
 import { ChatController } from './chat/chat.controller';
 import { ChatModule } from './chat/chat.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 
 
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     CacheModule.register({
       store: 'memory',
       ttl: 86400,
@@ -39,6 +41,6 @@ import { ChatModule } from './chat/chat.module';
   ],
   exports: [CacheModule],
   controllers: [AppController, BusinessController, ChatController],
-  providers: [AppService, BusinessService, GoogleBusinessService, ChatService],
+  providers: [AppService, BusinessService, ChatService],
 })
 export class AppModule {}

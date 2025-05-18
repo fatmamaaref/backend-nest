@@ -15,7 +15,7 @@ async function bootstrap() {
   app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
   // Activer CORS pour tous les domaines (vous pouvez ajuster cela selon vos besoins)
   app.enableCors({
-    origin: 'http://localhost:3000',  // URL du frontend
+    origin:  ['http://localhost:3000'],  // URL du frontend
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Accept, Authorization', // Autoriser le header Authorization
     credentials: true
@@ -23,5 +23,6 @@ async function bootstrap() {
   await ADMINAUTO();
   await app.listen(5000);  // Le backend écoute sur le port 5000
 }
+
 
 bootstrap();

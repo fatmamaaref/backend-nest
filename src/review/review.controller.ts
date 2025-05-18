@@ -1,103 +1,77 @@
 
-
-import { Body, Controller, Get, Param, Post, HttpCode, HttpStatus,  HttpException, BadRequestException } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, HttpCode, HttpStatus,  HttpException, BadRequestException, Logger } from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-
+import { SchedulerRegistry } from '@nestjs/schedule';
 
 @ApiTags('Reviews')
 @Controller('review')
 export class ReviewController {
   constructor(
+    private readonly schedulerRegistry: SchedulerRegistry,
     private readonly reviewService: ReviewService,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
+
+ 
   ) {}
 
+  @Get(':businessId')
+async getBusinessReviews(@Param('businessId') businessId: string) {
+  try {
+    return await this.reviewService.getBusinessReviews(businessId);
+  } catch (error) {
+    throw new HttpException(
+      error.message || 'Failed to fetch reviews',
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
+}
 
   @Post('facebook/sync')
-  @HttpCode(HttpStatus.OK)
-  async syncFacebookComments(@Body() body: { businessId: string }) {
-    try {
-      const { businessId } = body;
+@HttpCode(HttpStatus.OK)
+async syncFacebookComments(@Body() body: { businessId: string }) {
+  try {
+    const { businessId } = body;
 
-      // Récupérer la plateforme Facebook associée au business
-      const businessPlatform = await this.prisma.businessPlateforme.findFirst({
-        where: { 
-          businessId,
-          plateforme: { provider: 'FACEBOOK' } 
-        },
-        include: { plateforme: true }
-      });
+    const businessPlatform = await this.prisma.businessPlateforme.findFirst({
+      where: { 
+        businessId,
+        plateforme: { provider: 'FACEBOOK' } 
+      },
+      include: { plateforme: true }
+    });
 
-      if (!businessPlatform) {
-        throw new BadRequestException('No Facebook account linked to this business');
-      }
-
-      const { plateforme } = businessPlatform;
-      
-      if (!plateforme.accountId || !plateforme.pageAccessToken) {
-        throw new BadRequestException('Facebook account not properly configured');
-      }
-
-      // Synchroniser les commentaires
-      const comments = await this.reviewService.fetchAndSaveAllFacebookComments(
-        plateforme.accountId,
-        plateforme.pageAccessToken,
-        businessId
-      );
-
-      return {
-        success: true,
-        message: `Successfully synced ${comments.length} comments`,
-        data: comments
-      };
-    } catch (error) {
-      throw new HttpException(
-        error.message || 'Failed to sync Facebook comments',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
+    if (!businessPlatform) {
+      throw new BadRequestException('No Facebook account linked to this business');
     }
-  }
 
-
-
-
-  @Get(':businessId')
-  async getBusinessReviews(@Param('businessId') businessId: string) {
-    console.log(`Fetching reviews for business: ${businessId}`);
+    const { plateforme } = businessPlatform;
     
-    try {
-      const reviews = await this.prisma.review.findMany({
-        where: { businessId },
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          platformId: true,
-          author: true,
-          message: true,
-          sentiment: true,
-          response: true,
-          createdAt: true
-        }
-      });
-      console.log(`Found ${reviews.length} reviews`);
-      return { 
-        success: true,
-        data: reviews,  // <-- Utilisez toujours 'data' pour la cohérence
-        count: reviews.length
-      };
-    } catch (error) {
-      console.error(`Error fetching reviews: ${error.message}`);
-      throw new HttpException(
-        'Failed to fetch reviews', 
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
+    if (!plateforme.accountId || !plateforme.pageAccessToken) {
+      throw new BadRequestException('Facebook account not properly configured');
     }
+
+    // Passez le businessId comme troisième argument
+    const comments = await this.reviewService.fetchAndSaveAllFacebookComments(
+      plateforme.accountId,
+      plateforme.pageAccessToken,
+      businessId
+    );
+
+    return {
+      success: true,
+      message: `Successfully synced ${comments.length} comments`,
+      data: comments
+    };
+  } catch (error) {
+    throw new HttpException(
+      error.message || 'Failed to sync Facebook comments',
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
   }
-
-
+}
   @Post('analyze-sentiment')
   @HttpCode(HttpStatus.OK)
   async analyzeSentiment(@Body() body: { text: string }) {
@@ -222,4 +196,109 @@ async publishResponse(@Param('reviewId') reviewId: string) {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@Post('auto-responder/start/:businessId')
+@HttpCode(HttpStatus.OK)
+async startAutoResponder(
+  @Param('businessId') businessId: string,
+  @Body() body: { cronExpression?: string }
+) {
+  try {
+    return await this.reviewService.startAutoResponder(
+      businessId, 
+      body.cronExpression
+    );
+  } catch (error) {
+    throw new HttpException(
+      error.message || 'Failed to start auto-responder',
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
 }
+
+@Post('auto-responder/stop/:businessId')
+@HttpCode(HttpStatus.OK)
+async stopAutoResponder(@Param('businessId') businessId: string) {
+  try {
+    return await this.reviewService.stopAutoResponder(businessId);
+  } catch (error) {
+    throw new HttpException(
+      error.message || 'Failed to stop auto-responder',
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+  }
+}
+
+@Get('auto-responder/status/:businessId')
+async getAutoResponderStatus(@Param('businessId') businessId: string) {
+  const jobName = `auto-responder-${businessId}`;
+  
+  try {
+    // Vérification robuste de l'existence du job
+    const jobs = this.schedulerRegistry.getCronJobs();
+    if (!jobs.has(jobName)) {
+      return { active: false, nextRun: null };
+    }
+
+    const job = jobs.get(jobName);
+    
+    // Solution universelle pour obtenir la date
+    let nextRun: string | null = null;
+    try {
+      const nextDate = job.nextDate();
+      if (nextDate) {
+        // Conversion compatible avec toutes les versions
+        nextRun = typeof nextDate === 'string' 
+          ? new Date(nextDate).toISOString()
+          : new Date(nextDate.toString()).toISOString();
+      }
+    } catch (e) {
+    console.warn(`Failed to get next run date: ${e.message}`);
+    }
+
+    return {
+      active: true, // Si le job existe dans le registre, il est actif
+      nextRun
+    };
+  } catch (error) {
+console.error(`Status check failed: ${error.message}`);
+    return { 
+      active: false,
+      nextRun: null
+    };
+  }
+}
+}
+
+
+
+
+
+
